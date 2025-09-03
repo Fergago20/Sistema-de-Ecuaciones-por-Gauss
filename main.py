@@ -1,4 +1,4 @@
-from UI.app import iniciar_app
+from UI.app import iniciar_VentanaPrincipal
 
 if __name__ == "__main__":
-    iniciar_app()
+    iniciar_VentanaPrincipal()

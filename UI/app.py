@@ -1,101 +1,113 @@
 import tkinter as tk
 from tkinter import messagebox
-from solucionador.parser import construir_matriz, parse_equation
-from solucionador.gauss import gauss_jordan_with_log, leer_solucion_unica
-from solucionador.formats import matriz_str, fmt_frac
+# Importa funciones personalizadas del solucionador
+from solucionador.parser import construir_matriz, analizar_ecuacion
+from solucionador.gauss import gauss_jordan_con_log, leer_solucion_unica
+from solucionador.formats import matriz_str, formatear_fraccion
 
-class App(tk.Tk):
+# Clase principal de la aplicación (hereda de Tk)
+class VentanaPrincipal(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Resolución de Sistemas de Ecuaciones")
-        self.geometry("1000x650")
-        self.configure(bg="#111")
+        self.title("Resolución de Sistemas de Ecuaciones")   # Título de la ventana
+        self.geometry("1000x650")                           # Tamaño inicial
+        self.configure(bg="#111")                           # Fondo oscuro
 
-        # ---- Entrada de ecuación y lista
-        frm_left = tk.Frame(self, bg="#111")
-        frm_left.pack(side=tk.LEFT, fill=tk.Y, padx=12, pady=12)
+        # ---- Sección izquierda: entrada de ecuaciones y botones ----
+        frm_izq = tk.Frame(self, bg="#111")
+        frm_izq.pack(side=tk.LEFT, fill=tk.Y, padx=12, pady=12)
 
-        tk.Label(frm_left, text="Ecuación:", fg="#ddd", bg="#111").pack(anchor="w")
-        self.ent_eq = tk.Entry(frm_left, width=35)
-        self.ent_eq.pack(anchor="w")
-        tk.Button(frm_left, text="Agregar", command=self.agregar).pack(anchor="w", pady=(6,10))
+        # Entrada de una ecuación
+        tk.Label(frm_izq, text="Ecuación:", fg="#ddd", bg="#111").pack(anchor="w")
+        self.entrada_ecuacion = tk.Entry(frm_izq, width=35)          # Campo para escribir ecuación
+        self.entrada_ecuacion.pack(anchor="w")
+        tk.Button(frm_izq, text="Agregar", command=self.agregar).pack(anchor="w", pady=(6,10))
 
-        tk.Label(frm_left, text="Sistema de ecuaciones:", fg="#ddd", bg="#111").pack(anchor="w")
-        self.lst = tk.Listbox(frm_left, width=40, height=12)
-        self.lst.pack(anchor="w")
+        # Lista con el sistema completo
+        tk.Label(frm_izq, text="Sistema de ecuaciones:", fg="#ddd", bg="#111").pack(anchor="w")
+        self.lista_ecuaciones = tk.Listbox(frm_izq, width=40, height=12)  # Lista de ecuaciones
+        self.lista_ecuaciones.pack(anchor="w")
 
-        btns = tk.Frame(frm_left, bg="#111")
-        btns.pack(anchor="w", pady=8)
-        tk.Button(btns, text="Quitar", command=self.quitar).grid(row=0, column=0, padx=3)
-        tk.Button(btns, text="Limpiar", command=self.limpiar).grid(row=0, column=1, padx=3)
-        tk.Button(btns, text="Ver matriz", command=self.ver_matriz).grid(row=0, column=2, padx=3)
-        tk.Button(btns, text="Resolver", command=self.resolver).grid(row=0, column=3, padx=3)
+        # Botones para gestionar lista
+        frm_botones = tk.Frame(frm_izq, bg="#111")
+        frm_botones.pack(anchor="w", pady=8)
+        tk.Button(frm_botones, text="Quitar", command=self.quitar).grid(row=0, column=0, padx=3)
+        tk.Button(frm_botones, text="Limpiar", command=self.limpiar).grid(row=0, column=1, padx=3)
+        tk.Button(frm_botones, text="Ver matriz", command=self.ver_matriz).grid(row=0, column=2, padx=3)
+        tk.Button(frm_botones, text="Resolver", command=self.resolver).grid(row=0, column=3, padx=3)
 
-        tk.Label(frm_left, text="Solución:", fg="#ddd", bg="#111").pack(anchor="w", pady=(10,0))
-        self.txt_sol = tk.Text(frm_left, width=40, height=8)
-        self.txt_sol.pack(anchor="w")
+        # Área de texto para mostrar solución
+        tk.Label(frm_izq, text="Solución:", fg="#ddd", bg="#111").pack(anchor="w", pady=(10,0))
+        self.txt_solucion = tk.Text(frm_izq, width=40, height=8)
+        self.txt_solucion.pack(anchor="w")
 
-        # ---- Procedimiento a la derecha
-        frm_right = tk.Frame(self, bg="#111")
-        frm_right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=12, pady=12)
-        tk.Label(frm_right, text="Procedimiento:", fg="#ddd", bg="#111").pack(anchor="w")
-        # fuente monoespaciada para alinear matrices
-        self.txt_proc = tk.Text(frm_right, wrap="word", font=("Consolas", 11))
-        self.txt_proc.pack(fill=tk.BOTH, expand=True)
+        # ---- Sección derecha: procedimiento paso a paso ----
+        frm_der = tk.Frame(self, bg="#111")
+        frm_der.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=12, pady=12)
+        tk.Label(frm_der, text="Procedimiento:", fg="#ddd", bg="#111").pack(anchor="w")
 
-    # ------ acciones UI
+        # Caja de texto con fuente monoespaciada para alinear matrices
+        self.txt_procedimiento = tk.Text(frm_der, wrap="word", font=("Consolas", 11))
+        self.txt_procedimiento.pack(fill=tk.BOTH, expand=True)
+
+    # ------ Métodos para acciones de la interfaz ------
+
+    # Agregar ecuación a la lista
     def agregar(self):
-        s = self.ent_eq.get().strip()
+        s = self.entrada_ecuacion.get().strip()
         if not s:
             messagebox.showwarning("Aviso", "Escribe una ecuación.")
-            self.ent_eq.delete(0, tk.END)
-            self.ent_eq.focus_set()
+            self.entrada_ecuacion.delete(0, tk.END)
+            self.entrada_ecuacion.focus_set()
             return
 
-        if "=" not in s:
+        if "=" not in s:   # Validar que tenga '='
             messagebox.showerror("Error", "La ecuación debe contener '='.")
-            self.ent_eq.delete(0, tk.END)
-            self.ent_eq.focus_set()
+            self.entrada_ecuacion.delete(0, tk.END)
+            self.entrada_ecuacion.focus_set()
             return
 
-        # Validación semántica con el parser ANTES de agregarla a la lista
+        # Validación semántica (usar parser antes de agregar)
         try:
-            parse_equation(s)  # si hay error, lanzará ValueError con el mensaje correcto
+            analizar_ecuacion(s)  # Lanza error si la ecuación es inválida
         except Exception as e:
             messagebox.showerror("Error al interpretar", str(e))
-            self.ent_eq.delete(0, tk.END)
-            self.ent_eq.focus_set()
+            self.entrada_ecuacion.delete(0, tk.END)
+            self.entrada_ecuacion.focus_set()
             return
 
-        # Si todo OK, ahora sí agregar
-        self.lst.insert(tk.END, s)
-        self.ent_eq.delete(0, tk.END)
-        self.ent_eq.focus_set()
+        # Si todo está correcto, agregar a la lista
+        self.lista_ecuaciones.insert(tk.END, s)
+        self.entrada_ecuacion.delete(0, tk.END)
+        self.entrada_ecuacion.focus_set()
 
+    # Quitar ecuación seleccionada
     def quitar(self):
-        sel = self.lst.curselection()
+        sel = self.lista_ecuaciones.curselection()
         if not sel:
             return
-        self.lst.delete(sel[0])
+        self.lista_ecuaciones.delete(sel[0])
 
+    # Limpiar todo (lista, soluciones, procedimiento, entrada)
     def limpiar(self):
-        self.lst.delete(0, tk.END)
-        self.txt_proc.delete("1.0", tk.END)
-        self.txt_sol.delete("1.0", tk.END)
-        self.ent_eq.delete(0, tk.END)
-        self.ent_eq.focus_set()
+        self.lista_ecuaciones.delete(0, tk.END)
+        self.txt_procedimiento.delete("1.0", tk.END)
+        self.txt_solucion.delete("1.0", tk.END)
+        self.entrada_ecuacion.delete(0, tk.END)
+        self.entrada_ecuacion.focus_set()
 
+    # Devuelve lista de ecuaciones actuales
     def _ecuaciones(self):
-        return [self.lst.get(i) for i in range(self.lst.size())]
+        return [self.lista_ecuaciones.get(i) for i in range(self.lista_ecuaciones.size())]
 
+    # Ver la matriz aumentada [A|b]
     def ver_matriz(self):
         eqs = self._ecuaciones()
         if not eqs:
             messagebox.showwarning("Aviso", "Agrega al menos una ecuación.")
             return
 
-        # Bloquear vista de matriz si solo hay 1 ecuación (opcional)
-        if len(eqs) < 2:
+        if len(eqs) < 2:  # Validar que haya un sistema real
             messagebox.showwarning(
                 "Aviso",
                 "Se necesitan al menos 2 ecuaciones para formar un sistema."
@@ -103,20 +115,21 @@ class App(tk.Tk):
             return
 
         try:
-            _, A = construir_matriz(eqs)
+            _, A = construir_matriz(eqs)  # Construir matriz aumentada
         except Exception as e:
             messagebox.showerror("Error al interpretar", str(e))
             return
-        self.txt_proc.delete("1.0", tk.END)
-        self.txt_proc.insert(tk.END, matriz_str(A, "Matriz aumentada [A|b]"))
 
+        self.txt_procedimiento.delete("1.0", tk.END)
+        self.txt_procedimiento.insert(tk.END, matriz_str(A, "Matriz aumentada [A|b]"))
+
+    # Resolver el sistema de ecuaciones
     def resolver(self):
         eqs = self._ecuaciones()
         if not eqs:
             messagebox.showwarning("Aviso", "Agrega al menos una ecuación.")
             return
 
-        # Validación: al menos 2 ecuaciones para que sea sistema
         if len(eqs) < 2:
             messagebox.showwarning(
                 "Aviso",
@@ -124,43 +137,47 @@ class App(tk.Tk):
             )
             return
 
-        self.txt_proc.delete("1.0", tk.END)
-        self.txt_sol.delete("1.0", tk.END)
+        # Limpiar áreas de salida
+        self.txt_procedimiento.delete("1.0", tk.END)
+        self.txt_solucion.delete("1.0", tk.END)
 
-        # Construir matriz antes de resolver (define var_order y A0)
+        # Construir matriz
         try:
             var_order, A0 = construir_matriz(eqs)
         except Exception as e:
             messagebox.showerror("Error al interpretar ecuaciones", str(e))
             return
 
-        def logger(msg: str):
-            self.txt_proc.insert(tk.END, msg + "\n")
+        # anotar_paso interno: escribe pasos en el cuadro de procedimiento
+        def anotar_paso(mensaje: str):
+            self.txt_procedimiento.insert(tk.END, mensaje + "\n")
 
-        # Resolver con logging matricial
-        tipo, A = gauss_jordan_with_log(A0, logger)
+        # Resolver usando Gauss-Jordan
+        tipo, A = gauss_jordan_con_log(A0, anotar_paso)
 
+        # Revisar casos posibles
         if tipo == "inconsistente":
-            self.txt_sol.insert(tk.END, "no tiene solución\n")
+            self.txt_solucion.insert(tk.END, "no tiene solución\n")
             return
 
         if tipo == "infinitas":
-            self.txt_sol.insert(tk.END, "tiene infinitas soluciones (dependiente)\n")
+            self.txt_solucion.insert(tk.END, "tiene infinitas soluciones (dependiente)\n")
             return
 
-        # única
+        # Caso: solución única
         sol = leer_solucion_unica(A)
         if sol:
-            self.txt_sol.insert(tk.END, "Solución única:\n")
+            self.txt_solucion.insert(tk.END, "Solución única:\n")
             for name, val in zip(var_order, sol):
                 if val is not None:
-                    self.txt_sol.insert(tk.END, f"  {name} = {fmt_frac(val)}\n")
+                    self.txt_solucion.insert(tk.END, f"  {name} = {formatear_fraccion(val)}\n")
         else:
-            # Respaldo por columnas si no se pudo mapear
-            self.txt_sol.insert(tk.END, "Solución única (por columnas):\n")
+            # Respaldo: mostrar resultados por columnas
+            self.txt_solucion.insert(tk.END, "Solución única (por columnas):\n")
             n = len(A[0]) - 1
             for j in range(n):
-                self.txt_sol.insert(tk.END, f"  x{j+1} = {fmt_frac(A[j][-1])}\n")
+                self.txt_solucion.insert(tk.END, f"  x{j+1} = {formatear_fraccion(A[j][-1])}\n")
 
-def iniciar_app():
-    App().mainloop()
+# Función para iniciar la VentanaPrincipal
+def iniciar_VentanaPrincipal():
+    VentanaPrincipal().mainloop()
