@@ -1,6 +1,6 @@
 from fractions import Fraction        # Permite trabajar con fracciones exactas (racionales)
 from copy import deepcopy             # Para copiar matrices sin modificar el original
-from .formats import matriz_str, formatear_fraccion   # Funciones auxiliares para dar formato e imprimir matrices
+from formats import matriz_str, formatear_fraccion   # Funciones auxiliares para dar formato e imprimir matrices
 
 # Intercambia dos filas de la matriz A (i ↔ j)
 def _swap(A, i, j):
