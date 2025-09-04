@@ -11,9 +11,5 @@ class SistemaEcuaciones:
             raise ValueError("Se ha excedido el número de ecuaciones permitidas.")
         self.ecuaciones.append(ecuacion)
     
-    def MostrarSistema(self):
-        for ecuacion in self.ecuaciones:
-            return" + ".join(f"{coef}x{i+1}" for i, coef in enumerate(ecuacion[:-1])) + f" = {ecuacion[-1]}"
-    
     def ObtenerMatrizAumentada(self):
         return [ecuacion[:] for ecuacion in self.ecuaciones]
