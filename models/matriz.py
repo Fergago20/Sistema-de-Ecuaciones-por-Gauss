@@ -13,6 +13,9 @@ class Matriz:
         print("Matriz Aumentada:")
         for fila in self.matriz:
             print(" | ".join(f"{coef:8.3f}" for coef in fila))
+
+    
+
     
     def GaussJordan(self):
         matriz = [fila[:] for fila in self.matriz]
@@ -23,7 +26,13 @@ class Matriz:
             # Hacer el pivote 1
             pivote = matriz[i][i]
             if pivote == 0:
-                raise ValueError("No se puede realizar Gauss-Jordan, pivote es cero.")
+                for k in range(i + 1, numFilas):
+                    if matriz[k][i] != 0:
+                        self.cambiarFila(i, k)
+                        pivote = matriz[i][i]
+                        break
+                if pivote == 0:
+                    continue
             for j in range(numCols):
                 matriz[i][j] /= pivote
             
@@ -36,6 +45,9 @@ class Matriz:
         
         self.matriz = matriz
         return matriz
+    
+    def cambiarFila(self, fila1, fila2):
+        self.matriz[fila1], self.matriz[fila2] = self.matriz[fila2], self.matriz[fila1]
     
     def ObtenerSoluciones(self):
         soluciones = [fila[-1] for fila in self.matriz]

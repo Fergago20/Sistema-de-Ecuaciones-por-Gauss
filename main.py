@@ -92,7 +92,7 @@ class App(tk.Tk):
             else:
                 matriz = self.logica.matriz.matriz
                 self.text_resultados.delete("1.0", tk.END)
-                self.text_resultados.insert(tk.END, "Matriz reducida (RREF):\n")
+                self.text_resultados.insert(tk.END, "Matriz reducida:\n")
                 for fila in matriz:
                     self.text_resultados.insert(tk.END, " | ".join(f"{x:8.3f}" for x in fila) + "\n")
                 self.text_resultados.insert(tk.END, "\nSoluciones:\n")
