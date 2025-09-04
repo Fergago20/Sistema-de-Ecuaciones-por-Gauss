@@ -1,37 +1,31 @@
-from fractions import Fraction
+from fractions import Fraction  # Fracciones exactas (p/q) para impresión precisa
 
-#Da formato a un número (float o Fraction) para mostrarlo como entero, fracción o decimal.
+# Formatea un valor para impresión: entero "p" o fracción "p/q".
 def _fmt(x):
-    if isinstance(x, float):
-        # Si el valor es casi un entero, se muestra como tal
-        if abs(x - round(x)) < 1e-12:
-            return str(int(round(x)))
-        # Si no, se convierte a fracción con denominador limitado
-        f = Fraction(x).limit_denominator(1000)
-        return str(f.numerator) if f.denominator == 1 else f"{f.numerator}/{f.denominator}"
-    if isinstance(x, Fraction):
-        # Si es fracción con denominador 1, mostrar solo el numerador
+    if isinstance(x, float):  # En el prototipo exacto no aceptamos floats
+        raise TypeError("Prototipo exacto: Usa Fraction o int.")
+    if isinstance(x, Fraction):  # Fraction -> "p" si denom=1, si no "p/q"
         return str(x.numerator) if x.denominator == 1 else f"{x.numerator}/{x.denominator}"
-    return str(x)  # Para otros tipos, se convierte a texto
+    return str(x)  # ints u otros tipos imprimibles
 
-#Calcula el ancho máximo (número de caracteres) que ocupa cada columna de la matriz M.
+# Calcula el ancho máximo (en caracteres) de cada columna ya formateada.
 def _anchos(M):
-    if not M: return []   # Si la matriz está vacía, no hay anchos
-    w = [0]*len(M[0])     # Lista de anchos, uno por columna
-    for F in M:           # Para cada fila F de la matriz
+    if not M:  # Matriz vacía
+        return []
+    w = [0] * len(M[0])  # Un ancho por columna
+    for F in M:
         for j, v in enumerate(F):
-            s = _fmt(v)   # Formatear el valor
-            w[j] = max(w[j], len(s))  # Guardar el ancho máximo
+            s = _fmt(v)              # Longitud final depende del formato
+            w[j] = max(w[j], len(s)) # Mantener el máximo por columna
     return w
 
-#Devuelve un string con la matriz M representada en texto.
+# Construye una representación alineada de la matriz (opcionalmente con título).
 def matriz_texto(M, titulo=None):
-    if not M: return "(matriz vacía)\n"
-    w = _anchos(M)              # Ancho de cada columna
-    out = [titulo] if titulo else []  # Si hay título, se agrega al inicio
-    for F in M:                 # Recorre cada fila
-        # Alinea cada valor de la fila a la derecha según el ancho de su columna
-        c = [_fmt(v).rjust(w[j]) for j, v in enumerate(F)]
-        # Forma la fila con corchetes
-        out.append("[ " + "  ".join(c) + " ]")
-    return "\n".join(out) + "\n"  # Une todas las filas con saltos de línea
+    if not M:
+        return "(matriz vacía)\n"
+    w = _anchos(M)                     # Ancho por columna para alinear
+    out = [titulo] if titulo else []   # Primera línea: título si existe
+    for F in M:
+        c = [_fmt(v).rjust(w[j]) for j, v in enumerate(F)]  # Alineación a la derecha
+        out.append("[ " + "  ".join(c) + " ]")              # Fila con corchetes y doble espacio
+    return "\n".join(out) + "\n"       # Bloque con salto final
