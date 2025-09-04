@@ -13,7 +13,7 @@ class Logica:
     def resolver_sistema(self):
         try:
             self.matriz.GaussJordan()
-            soluciones = self.matriz.ObtenerSoluciones()
+            soluciones = self.matriz.retornarMatriz()
             return soluciones
         except ValueError as e:
             return str(e)

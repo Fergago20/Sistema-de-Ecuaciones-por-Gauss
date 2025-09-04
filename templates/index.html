@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Ecuaciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
+
+    <h1 class="text-4xl font-bold mb-6">Resolución de Sistemas</h1>
+
+    <!-- Formulario inicial -->
+    <div class="bg-white text-black rounded-2xl shadow-xl p-6 w-full max-w-lg">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <input id="numEcuaciones" type="number" min="1" placeholder="Ecuaciones"
+                class="border p-2 rounded-lg text-center">
+            <input id="numIncognitas" type="number" min="1" placeholder="Incógnitas"
+                class="border p-2 rounded-lg text-center">
+        </div>
+        <button id="btnGenerar"
+            class="w-full bg-black text-white py-2 rounded-xl hover:bg-gray-800 transition">
+            Generar Campos
+        </button>
+    </div>
+
+    <!-- Contenedor dinámico para ecuaciones -->
+    <div id="ecuacionesContainer" class="hidden mt-6 bg-white text-black rounded-2xl shadow-xl p-6 w-full max-w-3xl">
+        <h2 class="text-xl font-bold mb-4">Ingrese los coeficientes:</h2>
+        <div id="ecuacionesInputs" class="space-y-3"></div>
+        <button id="btnResolver"
+            class="mt-4 w-full bg-black text-white py-2 rounded-xl hover:bg-gray-800 transition">
+            Resolver
+        </button>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div id="errorMsg" class="hidden mt-4 bg-red-600 text-white rounded-xl p-3 max-w-md text-center"></div>
+
+    <!-- Resultado -->
+    <div id="resultadoContainer" class="hidden mt-6 bg-white text-black rounded-2xl shadow-xl p-6 w-full max-w-3xl">
+        <h2 class="text-xl font-bold mb-4">Resultado:</h2>
+        <table id="resultadoTabla" class="w-full border-collapse"></table>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

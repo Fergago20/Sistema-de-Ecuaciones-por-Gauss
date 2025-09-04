@@ -8,50 +8,50 @@ class Matriz:
         self.sistema.AgregarEcuacion(ecuacion)
         self.matriz = self.sistema.ObtenerMatrizAumentada()
     
-    def MostrarMatriz(self):
-        self.sistema.MostrarSistema()
-        print("Matriz Aumentada:")
-        for fila in self.matriz:
-            print(" | ".join(f"{coef:8.3f}" for coef in fila))
-
-    
-
-    
     def GaussJordan(self):
         matriz = [fila[:] for fila in self.matriz]
         numFilas = len(matriz)
         numCols = len(matriz[0])
-        
-        for i in range(numFilas):
-            # Hacer el pivote 1
-            pivote = matriz[i][i]
-            if pivote == 0:
+
+        # Recorremos columnas hasta la penúltima (última es término independiente)
+        for i in range(min(numFilas, numCols - 1)):
+            # Buscar un pivote no nulo en la columna actual
+            if matriz[i][i] == 0:
+                fila_no_nula = None
                 for k in range(i + 1, numFilas):
                     if matriz[k][i] != 0:
-                        self.cambiarFila(i, k)
-                        pivote = matriz[i][i]
+                        fila_no_nula = k
                         break
-                if pivote == 0:
+                if fila_no_nula is not None:
+                    # Intercambiar filas
+                    matriz[i], matriz[fila_no_nula] = matriz[fila_no_nula], matriz[i]
+                else:
+                    # No hay pivote válido, pasamos a la siguiente columna
                     continue
+
+            pivote = matriz[i][i]
+            if pivote == 0:  # Si sigue en cero, no podemos normalizar
+                continue
+
+            # Normalizar fila (pivote = 1)
             for j in range(numCols):
                 matriz[i][j] /= pivote
-            
+
             # Hacer ceros en la columna del pivote
             for k in range(numFilas):
                 if k != i:
                     factor = matriz[k][i]
                     for j in range(numCols):
                         matriz[k][j] -= factor * matriz[i][j]
-        
+
         self.matriz = matriz
         return matriz
-    
-    def cambiarFila(self, fila1, fila2):
-        self.matriz[fila1], self.matriz[fila2] = self.matriz[fila2], self.matriz[fila1]
-    
+
     def ObtenerSoluciones(self):
         soluciones = [fila[-1] for fila in self.matriz]
         return soluciones
+    def retornarMatriz(self):
+        return self.matriz
     
     def limpiarMatriz(self):
         self.matriz = []
